@@ -7,7 +7,7 @@ namespace AoC2024
 {
     static class Program
     {
-        const bool BENCHMARK = false;
+        private const bool BENCHMARK = false;
         private const int DAY = 1;
         
         public static void Main(string[] args)
@@ -28,7 +28,7 @@ namespace AoC2024
         static void RunDay(int day)
         {
             // REFLECTIOOON
-            Type type = Type.GetType($"AoC2024.Day{day}");
+            Type type = Type.GetType($"AoC2024.Day{day}")!;
             MethodInfo method = type.GetMethod("Run");
             var obj = Activator.CreateInstance(type);
             method.Invoke(obj, new object[]{File.ReadAllText($"input/day{day}.txt").Trim().Split('\n').ToList()});
