@@ -7,31 +7,33 @@ namespace AoC2024
 {
     static class Program
     {
-        private const bool BENCHMARK = false;
-        private const int DAY = 1;
+        private const string BENCHMARK = "BENCHMARK";
+        private const int DAY = 2;
         
         public static void Main(string[] args)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            if (BENCHMARK) 
+            string arg = args.Length > 0 ? args[0] : "";
+            if (arg == BENCHMARK) 
                 Benchmark();
             else 
-                RunDay(DAY);
+                RunDay(DAY, arg == "TEST");
             
             stopwatch.Stop();
             TimeSpan stopwatchElapsed = stopwatch.Elapsed;
             Console.WriteLine($"Completed in: {Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}ms");
         }
 
-        static void RunDay(int day)
+        static void RunDay(int day, bool test)
         {
             // REFLECTIOOON
             Type type = Type.GetType($"AoC2024.Day{day}")!;
             MethodInfo method = type.GetMethod("Run");
             var obj = Activator.CreateInstance(type);
-            method.Invoke(obj, new object[]{File.ReadAllText($"input/day{day}.txt").Trim().Split('\n').ToList()});
+            string testSuffix = test ? "_test" : "";
+            method.Invoke(obj, new object[]{File.ReadAllText($"input/day{day}{testSuffix}.txt").Trim().Split('\n').ToList()});
         }
         
         static void Benchmark()
@@ -41,7 +43,7 @@ namespace AoC2024
             for (int i = 1; i <= DAY; i++)
             {
                 Console.WriteLine($"=> Day {i}:");
-                RunDay(i);
+                RunDay(i, false);
             }
         }
     }
