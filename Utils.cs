@@ -50,6 +50,24 @@ public static class Utils
         return tempShape;
     }
     
+    public static T? TryGetValue<T>(this T[,] array, int x, int y, T defaultValue = default)
+    {
+        if (x < 0 || x >= array.GetLength(0) || y < 0 || y >= array.GetLength(1)) return defaultValue;
+        return array[x,y];
+    }
+
+    public static void PrintCharArray(char[,] grid)
+    {
+        for (int i = 0; i < grid.GetLength(0); i++) {
+            for (int j = 0; j < grid.GetLength(1); j++) {
+                Console.Write(grid[i, j]);
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine();
+    }
+
+    
     
     public static long GCF(long a, long b)
     {
