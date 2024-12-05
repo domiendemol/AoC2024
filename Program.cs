@@ -9,7 +9,7 @@ namespace AoC2024
     static class Program
     {
         private const string BENCHMARK = "BENCHMARK";
-        private const int DAY = 4;
+        private const int DAY = 5;
         
         public static void Main(string[] args)
         {
@@ -21,7 +21,6 @@ namespace AoC2024
                 Benchmark();
             }
             else {
-                Console.WriteLine($"Running day: {DAY}");
                 RunDay(DAY, arg == "TEST");
             }
 
@@ -32,7 +31,7 @@ namespace AoC2024
 
         static void RunDay(int day, bool test)
         {
-            Console.WriteLine($"=> Day {day}:");
+            Console.WriteLine($"=> [Day {day}]");
             
             // REFLECTIOOON
             Type type = Type.GetType($"AoC2024.Day{day}")!;
