@@ -1,0 +1,3 @@
+xmul(1,1)mul(1,1)&mul[3,7]!^don't()_mul(5,0)+mul(32,64](mul(11,0)mul(11,0)undo()?mul(1,1)mul(1,1)don't()mul(1,0))do()mul(1,1)don't()mul(1,0)do()mul(1,1)
+xmul(1,1)mul(1,1)&mul[3,7]!^don't()_mul(5,0)+mul(32,64](mul(11,0)mul(11,0)undo()?mul(1,1)mul(1,1)don't()mul(1,0))do()mul(1,1)don't()mul(1,0)don't()do()don't()mul(1,1)
+mul(1,1)
