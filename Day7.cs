@@ -15,6 +15,7 @@ public class Day7
 
     private long CalcPart(List<long> equation, long currTotal, int index, bool concat) 
     {
+        if (currTotal > equation[0]) return 0; // no need to go further if subresult is already higher than the final result (thx Nathan)
         long result1 = currTotal + equation[index];
         long result2 = currTotal * equation[index];
         long result3 = concat ? Convert.ToInt64(Convert.ToString(currTotal) + equation[index]) : 0;
@@ -28,6 +29,6 @@ public class Day7
         if (next2 != 0) return next2;
         long next3 = concat ? CalcPart(equation, result3, index + 1, concat) : 0;
         if (next3 != 0) return next3;
-        return next1 != 0 ? next1 : (next2  != 0 ? next2 : (next3 != 0 ? next3 : 0));
+        return 0;
     }
 }
