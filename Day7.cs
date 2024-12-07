@@ -18,7 +18,8 @@ public class Day7
         if (currTotal > equation[0]) return 0; // no need to go further if subresult is already higher than the final result (thx Nathan)
         long result1 = currTotal + equation[index];
         long result2 = currTotal * equation[index];
-        long result3 = concat ? Convert.ToInt64(Convert.ToString(currTotal) + equation[index]) : 0;
+        // long result3 = concat ? Convert.ToInt64(Convert.ToString(currTotal) + equation[index]) : 0;
+        long result3 = concat ? currTotal*(long) Math.Pow(10, Convert.ToString(equation[index]).Length) + equation[index] : 0;
         if (index == equation.Count - 1) {   // last part, check result
             return (result1 == equation[0] || result2 == equation[0] || result3 == equation[0]) ? equation[0] : 0;
         }
