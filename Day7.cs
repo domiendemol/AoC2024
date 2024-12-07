@@ -20,7 +20,7 @@ public class Day7
         long result2 = currTotal * equation[index];
         long result3 = concat ? Convert.ToInt64(Convert.ToString(currTotal) + equation[index]) : 0;
         if (index == equation.Count - 1) {   // last part, check result
-            return equation[0] == result1 ? result1 : (equation[0] == result2 ? result2 : (equation[0] == result3 ? result3 : 0));
+            return (result1 == equation[0] || result2 == equation[0] || result3 == equation[0]) ? equation[0] : 0;
         }
         
         long next1 = CalcPart(equation, result1, index + 1, concat);
