@@ -26,7 +26,7 @@ public class Day6
         // multi-threaded:
         int counter = 0;
         Parallel.ForEach(_inputGrid.Cast<char>(), (c, state, index) => {
-            if (TryBlock((int) index)) counter++;   
+            if (TryBlock((int) index)) Interlocked.Increment(ref counter);  
         });
         Console.WriteLine($"Part 2: {counter}");
     }
