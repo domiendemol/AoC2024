@@ -1,0 +1,51 @@
+namespace AoC2024;
+
+public class Day8
+{
+    struct Antenna
+    {
+        public char freq;
+        public Vector2Int pos;
+    }
+    
+    public void Run(List<string> input)
+    {
+        char[,] inputGrid = Utils.ToCharArray(input);
+        List<Antenna> antennas = inputGrid.Cast<char>().
+            Select((c, i) => new Antenna { freq = c, pos = new Vector2Int(i/inputGrid.GetLength(1), i%inputGrid.GetLength(0)) }).Where(a => a.freq != '.').ToList();
+
+        List<Vector2Int> antinodes = antennas.SelectMany(a => GetAntiNodes(a, antennas)).Where(v => inputGrid.TryGetValue(v.x, v.y) != '\0').Distinct().ToList();
+        Console.WriteLine($"Part 1: {antinodes.Count}");
+   
+        antinodes = antennas.SelectMany(a => GetAntiNodes(a, antennas, true)).Where(v => inputGrid.TryGetValue(v.x, v.y) != '\0').Distinct().ToList();
+        Console.WriteLine($"Part 2: {antinodes.Count}");
+        
+        // antinodes.ForEach(v => inputGrid[v.x, v.y] = '#');
+        // Utils.PrintCharArray(inputGrid);
+    }
+
+    private List<Vector2Int> GetAntiNodes(Antenna antenna, List<Antenna> antennas, bool all = false)
+    {
+        List<Antenna> others = antennas.Where(a => a.freq == antenna.freq && !a.Equals(antenna)).ToList();
+        return others.SelectMany(a => GetAntiNodes(a, antenna, all) ).ToList();
+    }
+
+    private List<Vector2Int> GetAntiNodes(Antenna a, Antenna b, bool all = false)
+    {
+        Vector2Int dir = b.pos - a.pos;
+        List<Vector2Int> nodes = new List<Vector2Int>();
+        int count = 1;
+        while (count < 50) { // very simple/brute limit, could check grid bounds instead but this is fast enough
+            nodes.Add(a.pos - (count * dir));
+            nodes.Add(b.pos + (count++ * dir));
+            if (!all) break;
+        }
+
+        if (all) {
+            nodes.Add(a.pos);
+            nodes.Add(b.pos);
+        }
+
+        return nodes;
+    }
+}
