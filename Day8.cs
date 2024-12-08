@@ -34,16 +34,11 @@ public class Day8
     {
         Vector2Int dir = b.pos - a.pos;
         List<Vector2Int> nodes = new List<Vector2Int>();
-        int count = 1;
-        while (count < 50) { // very simple/brute limit, could check grid bounds instead but this is fast enough
+        int count = all ? 0 : 1; // add antennas as well for part 2
+        while (count < 50) { // very simple/brute limit, should check grid bounds instead but this is fast enough
             nodes.Add(a.pos - (count * dir));
             nodes.Add(b.pos + (count++ * dir));
             if (!all) break;
-        }
-
-        if (all) {
-            nodes.Add(a.pos);
-            nodes.Add(b.pos);
         }
 
         return nodes;
