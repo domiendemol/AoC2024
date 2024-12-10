@@ -50,6 +50,17 @@ public static class Utils
         return tempShape;
     }
     
+    public static int[,] ToIntArray(List<string> input)
+    {
+        int[,] tempShape = new int[input[0].Length,input.Count];
+        for(int j = 0; j < input.Count; j++) {
+            for(int i = 0; i < input[j].Length; i++) {
+                tempShape[i,j] = (int) char.GetNumericValue(input[i][j]);
+            }
+        }
+        return tempShape;
+    }
+    
     public static T? TryGetValue<T>(this T[,] array, int x, int y, T defaultValue = default)
     {
         if (x < 0 || x >= array.GetLength(0) || y < 0 || y >= array.GetLength(1)) return defaultValue;

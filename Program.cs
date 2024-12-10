@@ -1,15 +1,12 @@
-﻿using System;
-using System.Data.SqlTypes;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace AoC2024
 {
     static class Program
     {
         private const string BENCHMARK = "BENCHMARK";
-        private const int DAY = 7;
+        private const int DAY = 10;
         
         public static void Main(string[] args)
         {
@@ -35,8 +32,8 @@ namespace AoC2024
             
             // REFLECTIOOON
             Type type = Type.GetType($"AoC2024.Day{day}")!;
-            MethodInfo method = type.GetMethod("Run");
-            var obj = Activator.CreateInstance(type);
+            MethodInfo? method = type.GetMethod("Run");
+            object? obj = Activator.CreateInstance(type);
             string testSuffix = test ? "_test" : "";
             if (!File.Exists($"input/day{day}{testSuffix}.txt")) {
                 Console.WriteLine("Error: input file does not exist");
@@ -51,7 +48,14 @@ namespace AoC2024
             Console.WriteLine("========================");
             for (int i = 1; i <= DAY; i++)
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                
                 RunDay(i, false);
+                
+                stopwatch.Stop();
+                TimeSpan stopwatchElapsed = stopwatch.Elapsed;
+                Console.WriteLine($"Time: {Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}ms");
             }
         }
     }
