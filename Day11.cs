@@ -5,22 +5,36 @@ public class Day11
     public void Run(List<string> input)
     {
         List<long> stones = input[0].Split(' ').Select(c => Convert.ToInt64(c)).ToList();
-
-        for (int i = 0; i < 25; i++) {
-            stones = stones.SelectMany(st => Blink(st)).ToList();
-            // Console.WriteLine("==> "); stones.ForEach(st => Console.Write(st + " ")); 
+        Dictionary<(long nr,  int blinks), long> cache = new Dictionary<(long, int), long>();
+        
+        // PART 1 - normal run, but cache intermediate results for every original stone and blinks/depth
+        // could now be replaced with: stones.Sum(st => BlinkCached(st, 25, cache))
+        foreach (long stone in stones)  {
+            List<long> tStones = new List<long>(){stone};
+            for (int i = 0; i < 25; i++) {
+                tStones = tStones.SelectMany(st => Blink(st)).ToList();
+                cache[(stone, i + 1)] = tStones.Count;
+            }        
         }
-        long part1 = stones.Count;
-       
-        Console.WriteLine($"Part 1: {part1}");
+        Console.WriteLine($"Part 1: {stones.Sum(stone => cache[(stone, 25)])}");
+        
+        // PART 2
+        Console.WriteLine($"Part 2: {stones.Sum(st => BlinkCached(st, 75, cache))}");
     }
 
-    private List<long> Blink(List<long> stones)
+    // returns resulting stone count
+    private long BlinkCached(long stone, int blinks, Dictionary<(long, int), long> cache)
     {
-        List<string> result = new List<string>();
-        return stones.SelectMany(stone => Blink(stone)).ToList();
+        if (blinks == 0) return 1;
+        if (cache.ContainsKey((stone, blinks))) return cache[(stone, blinks)];
+
+        List<long> newStones = Blink(stone);
+        long result = newStones.Select(st => BlinkCached(st, blinks-1, cache)).Sum();
+        cache[(stone, blinks)] = result;
+        return result;
     }
     
+    // returns resulting stones
     private List<long> Blink(long stone)
     {
         if (stone == 0) return new List<long>() { 1 };
