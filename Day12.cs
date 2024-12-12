@@ -7,13 +7,10 @@ public class Day12
         public char plant;
         public List<Vector2Int> positions;
     }
-
-    private int[,] debug;
     
     public void Run(List<string> input)
     {
         char[,] inputGrid = Utils.ToCharArray(input);
-        debug = new int[inputGrid.GetLength(0), inputGrid.GetLength(1)];
         
         // build regions
         List<Region> regions = new List<Region>(); // map of positions per plant
@@ -24,17 +21,8 @@ public class Day12
         }
 
         Console.WriteLine($"Part 1: {regions.Sum(r => GetPrice(r))}");
-        Console.WriteLine($"Part 2: {regions.Sum(r => GetPrice2New(r))}");
-        
-        
-        for (int i = 0; i < debug.GetLength(0); i++) {
-            for (int j = 0; j < debug.GetLength(1); j++) {
-                Console.Write($"{debug[i, j]:0} ");
-            }
-            Console.WriteLine();
-        }
-        Console.WriteLine();
-        
+        Console.WriteLine($"Part 2: {regions.Sum(r => GetPrice2NewNew(r))}");
+        // Console.WriteLine($"Part 2: {regions.Sum(r => GetPrice2New(r))}"); // works for all test cases, not for real input. GRR
     }
 
     private void AddToRegion(char plant, Vector2Int pos, List<Region> regions, char[,] inputGrid)
@@ -42,10 +30,8 @@ public class Day12
         if (inputGrid.TryGetValue(pos.x, pos.y, '\0') == '-') return;
         
         // check if adjacent to an existing region
-        // if so, add to it
-        // if not, create new
+        // if so, add to it. If not, create new
         var neighbours = GetNeighbours(pos, regions, inputGrid);
-        
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++)
             {
@@ -53,7 +39,6 @@ public class Day12
                 if (inputGrid.TryGetValue(pos.x + i, pos.y + j, '\0') == '\0') continue;
                 Region region = regions.FirstOrDefault(r => r.plant == plant && r.positions.Contains(pos + new Vector2Int(i, j)), new Region {plant = '\0'});
                 if (region.plant != '\0') {
-
                     if (!region.positions.Contains(pos))
                     {
                         region.positions.Add(pos);
@@ -97,6 +82,55 @@ public class Day12
         // Console.WriteLine($"A region of {region.plant} plants with price {region.positions.Count} * {total} = {total * region.positions.Count}");
         return total * region.positions.Count;
     }
+
+    private int GetPrice2NewNew(Region region)
+    {
+        // find edge locations, per location/direction
+        Dictionary<(int loc, Vector2Int dir), List<Vector2Int>> edges =
+            new Dictionary<(int loc, Vector2Int dir), List<Vector2Int>>();
+        region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x + 1, i.y)))
+            .ToList().ForEach(i => {
+                if (!edges.ContainsKey((i.x+1, new Vector2Int(0, 1)))) edges[(i.x+1, new Vector2Int(0, 1))] = new List<Vector2Int>();
+                edges[(i.x+1, new Vector2Int(0, 1))].Add(i);
+            });
+        region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x - 1, i.y)))
+            .ToList().ForEach(i => {
+                if (!edges.ContainsKey((i.x-1, new Vector2Int(0, 1)))) edges[(i.x-1, new Vector2Int(0, 1))] = new List<Vector2Int>();
+                edges[(i.x-1, new Vector2Int(0, 1))].Add(i);
+            });
+        region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x, i.y + 1)))
+            .ToList().ForEach(i => {
+                if (!edges.ContainsKey((i.y+1, new Vector2Int(1, 0)))) edges[(i.y+1, new Vector2Int(1, 0))] = new List<Vector2Int>();
+                edges[(i.y+1, new Vector2Int(1, 0))].Add(i);
+            });
+        region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x, i.y - 1)))
+            .ToList().ForEach(i => {
+                if (!edges.ContainsKey((i.y-1, new Vector2Int(1, 0)))) edges[(i.y-1, new Vector2Int(1, 0))] = new List<Vector2Int>();
+                edges[(i.y-1, new Vector2Int(1, 0))].Add(i);
+            });
+
+        // count edges by looping the positions and counting when it's interrupted
+        int count = 0;
+        foreach (var kvp in edges)
+        {
+            List<Vector2Int> edgePlaces;
+            if (kvp.Key.dir == new Vector2Int(0, 1))
+                edgePlaces = kvp.Value.Distinct().OrderBy(v => v.x).ThenBy(v => v.y).ToList();
+            else
+                edgePlaces = kvp.Value.Distinct().OrderBy(v => v.y).ThenBy(v => v.x).ToList();
+            
+            count++;
+            Vector2Int prev = edgePlaces[0];
+            for (int i = 1; i < edgePlaces.Count; i++)
+            {
+                if (prev + kvp.Key.dir != edgePlaces[i]) count++;
+                prev = edgePlaces[i];
+            }
+        }
+        
+        // Console.WriteLine($"A region of {region.plant} plants with price {region.positions.Count} * {count} = {count * region.positions.Count}");
+        return region.positions.Count * count;
+    }
     
     private int GetPrice2New(Region region)
     {
@@ -107,26 +141,24 @@ public class Day12
         adjacents = adjacents.Concat(region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x + 1, i.y))).Select(i => new Vector2Int(i.x + 1, i.y))).ToList();
         adjacents = adjacents.Concat(region.positions.Where(i => !region.positions.Contains(new Vector2Int(i.x - 1, i.y))).Select(i => new Vector2Int(i.x - 1, i.y))).ToList();
         
-        // Console.WriteLine(string.Join(", ", adjacents));
-        List<Vector2Int> removed = new List<Vector2Int>();
-        // go through 
+        Dictionary<(Vector2Int pos, Vector2Int dir), bool> removed = new Dictionary<(Vector2Int pos, Vector2Int dir), bool>();
         for (int i = 0; i < adjacents.Count; i++)
         {
             Vector2Int pos = adjacents[i];
-            if (removed.Contains(pos)) continue;
+            // if (removed.Contains(pos)) continue;
             int removedCount = RemoveLines(pos, adjacents, removed);
-            i = Math.Max(0, i-removedCount);
+            if (removedCount > 0) i = 0;
         }
-        // Console.WriteLine(string.Join(", ", adjacents));
-        if (region.plant == 'C') adjacents.ForEach(v => debug[v.x+1, v.y] += 1);
-
+        //if (region.plant == 'C') adjacents.ForEach(v => debug[v.x+1, v.y] += 1);
+        if (region.plant == 'R') Console.WriteLine(string.Join(" ", adjacents));
         
         Console.WriteLine($"A region of {region.plant} plants with price {region.positions.Count} * {adjacents.Count()} = {adjacents.Count() * region.positions.Count}");
         return adjacents.Count() * region.positions.Count;
     }
 
-    private int RemoveLines(Vector2Int pos, List<Vector2Int> adjacents, List<Vector2Int> removed)
+    private int RemoveLines(Vector2Int pos, List<Vector2Int> adjacents, Dictionary<(Vector2Int pos, Vector2Int dir), bool> removed)
     {
+        // maybe find direction/normal?
         int a = RemoveLine(pos, new Vector2Int(0, 1), adjacents, removed);
         if (a > 0) return a;
         int b = RemoveLine(pos, new Vector2Int(0, -1), adjacents, removed);
@@ -137,92 +169,17 @@ public class Day12
         return d;
     }
 
-    private int RemoveLine(Vector2Int pos, Vector2Int direction, List<Vector2Int> adjacents, List<Vector2Int> removed)
+    private int RemoveLine(Vector2Int pos, Vector2Int dir, List<Vector2Int> adjacents, Dictionary<(Vector2Int pos, Vector2Int dir), bool> removed)
     {
+        if (removed.ContainsKey((pos, dir.Normalize()))) return 0;
         int count = 0;
-        for (Vector2Int next = pos + direction; adjacents.Contains(next); next += direction)
+        for (Vector2Int next = pos + dir; adjacents.Contains(next) && !removed.ContainsKey((next, dir.Normalize())); next += dir) //&& !removed.Contains(next)
         {
+            // Console.WriteLine($"Removing {next} from {pos}");
             adjacents.Remove(next);
-            removed.Add(next);
+            removed[(next, dir.Normalize())] = true;
             count ++;
         }
-        return count;
-    }
-
-    private long GetPrice2(Region region)
-    {
-        long angles = region.positions.Sum(pos => GetInteriorAngles(pos, region));
-        Console.WriteLine($"A region of {region.plant} plants with price {region.positions.Count} * {(angles / 180 + 2)} = {region.positions.Count * (angles / 180 + 2)}");
-        return region.positions.Count * (angles / 180 + 2);
-    }
-
-    private int GetInteriorAngles(Vector2Int pos, Region region)
-    {
-        // see https://www.sciencing.com/how-to-find-the-number-of-sides-of-a-polygon-12751688/
-        // 0 neighbour: 4 angles 90
-        // 1 neighbour: 2 angles 90
-        // 2 neighbours on same line: 0 angle
-        // 2 neighbours not on same line : 1 angle 90 + 1 270
-        // 3 neighbors: 1 270
-        // 4 neighbour: none
-        List<Vector2Int> neighbours = new List<Vector2Int>();
-        if (region.positions.Contains(pos + new Vector2Int(0, 1))) neighbours.Add(pos + new Vector2Int(0, 1));
-        if (region.positions.Contains(pos + new Vector2Int(0, -1))) neighbours.Add(pos + new Vector2Int(0, -1));
-        if (region.positions.Contains(pos + new Vector2Int(1, 0))) neighbours.Add(pos + new Vector2Int(1, 0));
-        if (region.positions.Contains(pos + new Vector2Int(-1, 0))) neighbours.Add(pos + new Vector2Int(-1, 0));
-
-        int angles = 0;
-        switch (neighbours.Count)
-        {
-            case 0: 
-                angles = 4 * 90; break;
-            case 1: 
-                angles = 2 * 90; break;
-            case 2:
-                if (neighbours.All(n => n.x == pos.x) || neighbours.All(n => n.y == pos.y)) angles = 0;
-                else {
-                    // get the other pos
-                    //if (region.positions.Contains(pos + new Vector2Int(1, 1)) ||
-                    //    region.positions.Contains(pos + new Vector2Int(1, -1)) ||
-                    //    region.positions.Contains(pos + new Vector2Int(-1, 1)) ||
-                    //    region.positions.Contains(pos + new Vector2Int(-1, -1)))
-                    //        angles = 90;
-                    //else angles = 90 + 270;
-                    angles = (GetOtherPosInSquare(neighbours, region) > 1) ? 90 : 90 + 270;
-                }
-                break;
-            case 3: 
-                //if (region.positions.Contains(pos + new Vector2Int(1, 1)) ||
-                //    region.positions.Contains(pos + new Vector2Int(1, -1)) ||
-                //    region.positions.Contains(pos + new Vector2Int(-1, 1)) ||
-                //    region.positions.Contains(pos + new Vector2Int(-1, -1)))
-                //    angles = 0;
-                //else angles = 270; break;
-                angles = (3 - GetOtherPosInSquare(neighbours, region)) * 270;
-                break;
-            case 4: 
-                angles = 0; break;
-        }
-        debug[pos.x, pos.y] = angles;
-        return angles;
-    }
-
-    private int GetOtherPosInSquare(List<Vector2Int> neighbours, Region region)
-    {
-        int count = 0;
-        int xMin = neighbours.Min(v => v.x);
-        int xMax = neighbours.Max(v => v.x);
-        int yMin = neighbours.Min(v => v.y);
-        int yMax = neighbours.Max(v => v.y);
-        for (int i = xMin; i <= xMax; i++)
-        {
-            for (int j = yMin; j <= yMax; j++)
-            {
-                if (!neighbours.Contains(new Vector2Int(i, j)) && region.positions.Contains(new Vector2Int(i, j))) count++;
-                Console.WriteLine($"{i}-{j} -- {count}");
-            }
-        }
-        Console.WriteLine($"{count}");
         return count;
     }
 }

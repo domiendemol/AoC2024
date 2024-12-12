@@ -41,10 +41,10 @@ public static class Utils
     // is there a better way?
     public static char[,] ToCharArray(List<string> input)
     {
-        char[,] tempShape = new char[input[0].Length,input.Count];
+        char[,] tempShape = new char[input.Count, input[0].Length];
         for(int j = 0; j < input.Count; j++) {
             for(int i = 0; i < input[j].Length; i++) {
-                tempShape[i,j] = input[i][j];
+                tempShape[j,i] = input[j][i];
             }
         }
         return tempShape;
