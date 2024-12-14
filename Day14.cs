@@ -14,68 +14,82 @@ public class Day14
         public void SimulateSecond()
         {
             x = (x + vx);
-            while (x<0) x += _height;
-            x = x % _height;
+            while (x<0) x += _width;
+            x = x % _width;
             y = y + vy;
-            while (y<0) y += _width;
-            y = y % _width;
+            while (y<0) y += _height;
+            y = y % _height;
         }
     }
 
-    private static int _width = 101; //11;
-    private static int _height = 103; // // 7;
+    private static int _width = 101; 
+    private static int _height = 103; 
     
     public void Run(List<string> input)
+    {
+        List<Robot> robots = GetRobots(input);
+        if (robots[0].x != 99) {
+            _width = 11; _height = 7; // test mode 
+        }
+        
+        // PART 1
+        Enumerable.Range(0, 100).ToList().ForEach(i => robots.ForEach(robot => robot.SimulateSecond()));
+        Console.WriteLine($"Part 1: {GetSafetyFactor(robots)}");
+
+        // PART 2
+        robots = GetRobots(input);
+        long sf, prevSf = 0;
+        int s = 1;
+        for (bool tree = false; !tree; s++)
+        {
+            robots.ForEach(robot => robot.SimulateSecond());
+
+            sf = GetSafetyFactor(robots);
+            if (sf < prevSf * 0.3f) {
+                // sudden drop in safety factor for a tree image compared to more scattered layouts
+                // figured out by trial/error (lowering limit every time) and printing trees in console
+                // PrintTree(robots);
+                tree = true;
+            }
+            prevSf = GetSafetyFactor(robots);
+        }
+        Console.WriteLine($"Part 2: {s-1}");
+    }
+    
+    private void PrintTree(List<Robot> robots)
+    {       
+        for (int y = 0; y <_height; y++) {
+            for (int x = 0; x < _width; x++) {
+                int count = robots.Count(r => r.x == x && r.y == y);
+                Console.Write(count == 0 ? "." : "#");
+            }
+            Console.WriteLine();
+        }
+    }
+
+    private List<Robot> GetRobots(List<string> input)
     {
         var numbers = input.Where(line => line.Length > 0).SelectMany(line => Regex.Matches(line, @"(\-*\d+)")).ToList();
         List<Robot> robots = new List<Robot>();
         for (int i = 0; i < numbers.Count(); i+=4)
         {
             robots.Add(new Robot() {
-                y = Convert.ToInt32(numbers[i].Value),
-                x = Convert.ToInt32(numbers[i+1].Value),
-                vy = Convert.ToInt32(numbers[i+2].Value),
-                vx = Convert.ToInt32(numbers[i+3].Value),
+                x = Convert.ToInt32(numbers[i].Value),
+                y = Convert.ToInt32(numbers[i+1].Value),
+                vx = Convert.ToInt32(numbers[i+2].Value),
+                vy = Convert.ToInt32(numbers[i+3].Value),
             });
         }
 
-        if (robots[0].y != 99) {
-            _width = 11;
-            _height = 7;
-        }
-        Console.WriteLine($"Part 1: {robots[0].vx}, {robots[0].vy}");
-        Console.WriteLine($"Part 1: {robots[1].vx}, {robots[1].vy}");
-        Console.WriteLine($"Part 1: {robots[2].vx}, {robots[2].vy}");
-        Console.WriteLine($"Part 1: {robots[3].vx}, {robots[3].vy}");
-        Console.WriteLine($"Part 1: {robots[4].vx}, {robots[4].vy}");
-        // Console.WriteLine($"Part 1: {robots[0].x}, {robots[0].y}");
-       Enumerable.Range(0, 100).ToList().ForEach(i => robots.ForEach(robot => robot.SimulateSecond()));
-        Console.WriteLine($"Part 1: {robots[0].x}, {robots[0].y}");
-        Console.WriteLine($"Part 1: {robots[1].x}, {robots[1].y}");
-        Console.WriteLine($"Part 1: {robots[2].x}, {robots[2].y}");
-        Console.WriteLine($"Part 1: {robots[3].x}, {robots[3].y}");
-        Console.WriteLine($"Part 1: {robots[4].x}, {robots[4].y}");
-        
-        Console.WriteLine($"Part 1: {GetSafetyFactor(robots)}");
-
-        for (int x = 0; x < _height; x++)
-        {
-            for (int y = 0; y < _width; y++)
-            {
-                Console.Write(robots.Count(r => r.x == x && r.y == y));
-            }
-            Console.WriteLine();
-        }
+        return robots;
     }
-
-    
     
     private long GetSafetyFactor(List<Robot> robots)
     {
-        long nrRobots = robots.Where(r => r.x < _height / 2 && r.y < _width / 2).Count();
-        nrRobots *= robots.Where(r => r.x > _height / 2 && r.y < _width / 2).Count();
-        nrRobots *= robots.Where(r => r.x < _height / 2 && r.y > _width / 2).Count();
-        nrRobots *= robots.Where(r => r.x > _height / 2 && r.y > _width / 2).Count();
+        long nrRobots = robots.Count(r => r.x < _width / 2 && r.y < _height / 2);
+        nrRobots *= robots.Count(r => r.x > _width / 2 && r.y < _height / 2);
+        nrRobots *= robots.Count(r => r.x < _width / 2 && r.y > _height / 2);
+        nrRobots *= robots.Count(r => r.x > _width / 2 && r.y > _height / 2);
         return nrRobots;
     }
 }
