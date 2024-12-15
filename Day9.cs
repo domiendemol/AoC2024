@@ -13,7 +13,7 @@ public class Day9
 		List<int> fileIndxs = blocks.Select((b, indx) => b != -1 ? indx : -1).Where(i => i != -1).ToList();
 
 		Console.WriteLine($"Part 1: {Part1(new List<int>(blocks), fileIndxs)}");
-		Console.WriteLine($"Part 2: {Part2(new List<int>(blocks), fileIndxs, freeSpaceIndxs)}");
+		Console.WriteLine($"Part 2: {Part2(new List<int>(blocks), freeSpaceIndxs)}");
 	}
 
 	private long Part1(List<int> blocks, List<int> fileIndxs)
@@ -36,7 +36,7 @@ public class Day9
 		return blocks.Select((b, indx) => (long) (b == -1 ? 0 : indx * b)).Sum();
 	}
 
-	private long Part2(List<int> blocks, List<int> fileIndxs, List<int> freeSpaceIndxs)
+	private long Part2(List<int> blocks, List<int> freeSpaceIndxs)
 	{
 		for (int i = _fileSizes.Count-1; i >= 0; i--)
 		{
@@ -63,7 +63,6 @@ public class Day9
 		int from = blocks.IndexOf(id);
 		if (from <= target) return false;
 		
-		_fileSizes[id] = Int32.MaxValue;
 		for (int j = 0; j < size; j++)
 		{
 			blocks[from+j] = -1;
@@ -85,5 +84,4 @@ public class Day9
 		}
 		return b;
 	}
-	
 }

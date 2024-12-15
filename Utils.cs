@@ -66,6 +66,18 @@ public static class Utils
         if (x < 0 || x >= array.GetLength(0) || y < 0 || y >= array.GetLength(1)) return defaultValue;
         return array[x,y];
     }
+    
+    public static T? TryGetValue<T>(this T[] array, int x, T defaultValue = default)
+    {
+        if (x < 0 || x >= array.GetLength(0)) return defaultValue;
+        return array[x];
+    }
+    
+    public static T? TryGetValue<T>(this List<T> list, int x, T defaultValue = default)
+    {
+        if (x < 0 || x >= list.Count) return defaultValue;
+        return list[x];
+    }
 
     public static void PrintCharArray(char[,] grid)
     {

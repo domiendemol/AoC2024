@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 
 namespace AoC2024;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class Day15
 {
     private char[,] _grid;
@@ -24,19 +23,20 @@ public class Day15
     {
         // Part 1
         ParseInput(input, false);
-        for (int i = 0; i < _moves.Count; i++) {
-            Move(i);
-        }
+        Enumerable.Range(0, _moves.Count).ToList().ForEach(i => Move(i));
         Console.WriteLine($"Part 1: {Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i))}");
         
         // Part 2
         ParseInput(input, true);
         for (int i = 0; i < _moves.Count; i++) {
-            Move(i);
+            MoveDoubleBoxes(i);
+            // Console.Clear();
+            // Utils.PrintCharArray(_grid);
+            // Console.WriteLine($"{i}, next: {_moves.TryGetValue(i+1)}");
+            // Console.ReadLine();
         }
-        Console.WriteLine($"Part 2 {Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i))}");
-        
-        Utils.PrintCharArray(_grid);
+        Console.WriteLine($"Part 2: {Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i))}");
+        // Utils.PrintCharArray(_grid);
     }
 
     private void ParseInput(List<string> input, bool widen)
@@ -50,18 +50,15 @@ public class Day15
             {
                 for (int j = 0; j < _grid.GetLength(1); j++)
                 {
-                    if (_grid[i, j] == 'O')
-                    {
+                    if (_grid[i, j] == 'O') {
                         doubleGrid[i, j * 2] = '[';
                         doubleGrid[i, j * 2 + 1] = ']';
                     }
-                    else if (_grid[i, j] == '@')
-                    {
+                    else if (_grid[i, j] == '@') {
                         doubleGrid[i, j * 2] = '@';
                         doubleGrid[i, j * 2 + 1] = '.';
                     }
-                    else
-                    {
+                    else {
                         doubleGrid[i, j * 2] = _grid[i, j];
                         doubleGrid[i, j * 2 + 1] = _grid[i, j];
                     }
@@ -77,10 +74,9 @@ public class Day15
 
     private void Move(int mIndex)
     {
-        Console.Write(_moves[mIndex]);
         Vector2Int dir = _dirMap[_moves[mIndex]];
         Vector2Int look = _robotPos;
-        while (_grid[(look+dir).x, (look+dir).y] == 'O')
+        while (_grid[(look+dir).x, (look+dir).y] == 'O' || _grid[(look+dir).x, (look+dir).y] == '[' || _grid[(look+dir).x, (look+dir).y] == ']')
         {
             look += dir; // find blocks to move as well
         }
@@ -95,6 +91,54 @@ public class Day15
         _robotPos += dir;
     }
     
+    private void MoveDoubleBoxes(int mIndex)
+    {
+        Vector2Int dir = _dirMap[_moves[mIndex]];
+        if (_grid[(_robotPos + dir).x, (_robotPos + dir).y] == '#') return;
+        if (dir.x == 0) {
+            Move(mIndex);
+            return;
+        }
+        
+        // find all blocks that would be pushed
+        List<Vector2Int>? pushedBlocks = GetBlocks(_robotPos, dir);
+        if (pushedBlocks != null)
+        {
+            // none should have a wall in front of them
+            if (pushedBlocks.Any(bl => _grid[(bl+dir).x, (bl+dir).y] == '#')) return;
+            // move 'em all (in reverse direction)
+            pushedBlocks = pushedBlocks.Distinct().OrderBy(bl => bl.x).ToList();
+            if (dir.x == 1) 
+                pushedBlocks.Reverse();
+            pushedBlocks.ForEach(block =>
+            {
+                _grid[(block+dir).x, (block+dir).y] = _grid[(block).x, (block).y]; // new place
+                _grid[(block).x, (block).y] = '.';
+            });
+        }
+        
+        _grid[(_robotPos + dir).x, (_robotPos+dir).y] = '@';
+        _grid[_robotPos.x, _robotPos.y] = '.';
+        _robotPos += dir;
+    }
+
+    private List<Vector2Int>? GetBlocks(Vector2Int coord, Vector2Int dir)
+    {
+        List<Vector2Int>? tBlocks = null;
+        // check two positions higher
+        if (_grid[(coord+dir).x, (coord+dir).y] == '[' || _grid[(coord+dir).x, (coord+dir).y] == ']')
+        {
+            tBlocks = new List<Vector2Int>();
+            tBlocks.Add(coord + dir);
+            tBlocks.Add(coord + dir + new Vector2Int(0, _grid[(coord+dir).x, (coord+dir).y] == '[' ? 1 : -1));
+            IEnumerable<Vector2Int>? a = GetBlocks(coord + dir, dir);
+            IEnumerable<Vector2Int>? b = GetBlocks(coord + dir + new Vector2Int(0, _grid[(coord+dir).x, (coord+dir).y] == '[' ? 1 : -1), dir);
+            if (a != null) tBlocks.AddRange(a);
+            if (b != null) tBlocks.AddRange(b);
+        }
+        return tBlocks;
+    }
+    
     private int GetGPS(int index)
     {
         // The GPS coordinate of a box is equal to 100 times its distance from the top edge of the map
@@ -102,6 +146,6 @@ public class Day15
         // (This process does not stop at wall tiles; measure all the way to the edges of the map.)
         int x = index % _grid.GetLength(0);
         int y = index / _grid.GetLength(0);
-        return _grid[x,y] == 'O'? 100 * x + y : 0;
+        return (_grid[x,y] == 'O' || _grid[x,y] == '[') ? 100 * x + y : 0;
     }
 }
