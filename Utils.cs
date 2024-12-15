@@ -78,6 +78,18 @@ public static class Utils
         Console.WriteLine();
     }
 
+    public static Vector2Int FindIndex<T>(T[,] grid, T obj)
+    {
+        for (int i = 0; i < grid.GetLength(0); i++)
+        {
+            for (int j = 0; j < grid.GetLength(1); j++)
+            {
+                if (obj.Equals(grid[i, j])) return new Vector2Int(i, j);
+            }
+        }
+        return new Vector2Int(-1, -1);
+    }
+
     
     
     public static long GCF(long a, long b)
