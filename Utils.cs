@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace AoC2024;
@@ -102,7 +103,12 @@ public static class Utils
         return new Vector2Int(-1, -1);
     }
 
-    
+    // handles negative numbers
+    public static int Mod(int x, int m)
+    {
+        if (x < 0) x += m;
+       return (x%m + m)%m;
+    }
     
     public static long GCF(long a, long b)
     {

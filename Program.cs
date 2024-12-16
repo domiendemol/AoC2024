@@ -6,7 +6,7 @@ namespace AoC2024
     static class Program
     {
         private const string BENCHMARK = "BENCHMARK";
-        private const int DAY = 15;
+        private const int DAY = 16;
         
         public static void Main(string[] args)
         {
