@@ -96,7 +96,7 @@ public class Day15
         Vector2Int dir = _dirMap[_moves[mIndex]];
         if (_grid[(_robotPos + dir).x, (_robotPos + dir).y] == '#') return;
         if (dir.x == 0) {
-            Move(mIndex);
+            Move(mIndex);   
             return;
         }
         

@@ -48,6 +48,7 @@ public class Day14
             if (sf < prevSf * 0.3f) {
                 // sudden drop in safety factor for a tree image compared to more scattered layouts
                 // figured out by trial/error (lowering limit every time) and printing trees in console
+                // after many attempts to use different methods
                 // PrintTree(robots);
                 tree = true;
             }
