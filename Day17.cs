@@ -88,13 +88,6 @@ public class Day17
         }
         else
         {
-                //  Anyway, the approach was:
-                //    write a function which essentially does the work of my input program (wrote a disassembler to reverse-engineer), but stops at a specified A_target instead of zero
-                //    start at A_target = 0
-                //    starting from the last digit of the program (the desired output) and working backwards, figure out which A = (single octal digit appended to A_target), when passed to our function, can output the current digit of the program
-                //    add each of those possibilities to a list, and use the possibilities in the last iteration as A_targets for the next
-                //    find min of the A's obtained in the final stage
-
                 // check every number of our output, starting from the back
                 List<long> queue = new List<long>(){0}; 
                 for (int i = program.Length-1; i >= 0; i--)
