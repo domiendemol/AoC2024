@@ -15,15 +15,15 @@ public class Day18
         List<Vector2Int> firstMemories = memories.Take(memories[0].x == 24 ? 1024 : 12).ToList();     
         
         // build graph/nodes
-        List<Node> graph = new List<Node>();
+        Dictionary<Vector2Int, Node> graph = new Dictionary<Vector2Int, Node>();
         for (int x = 0; x <= gridSize; x++) {
             for (int y = 0; y <= gridSize; y++) {
-                if (!firstMemories.Contains(new Vector2Int(x, y))) graph.Add(new Node(new Vector2Int(x, y)));
+                if (!firstMemories.Contains(new Vector2Int(x, y))) graph.Add(new Vector2Int(x, y), new Node(new Vector2Int(x, y)));
             }
         }
         
         // Part 1 
-        Node end = graph.First(n => n.pos == new Vector2Int(gridSize, gridSize));
+        Node end = graph[new Vector2Int(gridSize, gridSize)];
         int shortestPath = GetPathLength(graph, end, -1);
         Console.WriteLine($"Part 1: {shortestPath}");
         
@@ -32,32 +32,29 @@ public class Day18
         // List<Node> reducingGraph = new List<Vector2Int>(graph);
         for (int i = firstMemories.Count; i < memories.Count; i++)
         {
-            Node node = graph.FirstOrDefault(n => n.pos == memories[i], null);
-            if (node != null)
+            if (graph.TryGetValue(memories[i], out Node node))
             {
-                graph.Remove(node); // remove from graph
+                graph.Remove(memories[i]); // remove from graph
                 // optimizations, only run path finding after removing relevant nodes (not on path and with low enough cost)
                 if (!node.onPath) continue;
                 if (node.cost + (end.pos - node.pos).Magnitude() > shortestPath) continue;
                 
-                // graph.ForEach(n => n.Reset());
                 end.Reset(runs);
                 shortestPath = GetPathLength(graph, end, runs++);
-                 Console.WriteLine($"Part 2, removed : {memories[i]} ==> {shortestPath}");
                 if (shortestPath == Int32.MaxValue)
                 {
                     Console.WriteLine($"Part 2: {memories[i]}");
-                    Console.WriteLine($"PF runs: {runs}");
+                    // Console.WriteLine($"PF runs: {runs}");
                     return;
                 }
             }
         }
     }
 
-    private int GetPathLength(List<Node> graph, Node end, int run)
+    private int GetPathLength(Dictionary<Vector2Int, Node> graph, Node end, int run)
     {
         Queue<Node> queue = new Queue<Node>();
-        Node start = graph.First(n => n.pos == new Vector2Int(0, 0));
+        Node start = graph[new Vector2Int(0, 0)];
         start.cost = 0;
         queue.Enqueue(start);
 
@@ -68,7 +65,7 @@ public class Day18
 
             for (int i = 0; i < _directions.Length; i++)
             {
-                Node next = graph.FirstOrDefault(n => n.pos == node.pos + _directions[i], null);
+                graph.TryGetValue(node.pos + _directions[i], out Node? next);
                 if (next != null && next.run != run) next.Reset(run);
                 if (next != null && node.cost + 1 < next.cost)
                 {
