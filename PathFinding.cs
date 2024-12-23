@@ -71,14 +71,14 @@ public class PathFinding
             node.visited = true;
         }
 
-        List<Node> path = new List<Node>();
-        Node pathNode = end;
-        while (pathNode.prevNodes.Count > 0)
-        {
-            path.Insert(0, pathNode);
-            pathNode = pathNode.prevNodes[0];
-        }
-        // path.Insert(0, pathNode);
+        // List<Node> path = new List<Node>();
+        // Node pathNode = end;
+        // while (pathNode.prevNodes.Count > 0)
+        // {
+        //     path.Insert(0, pathNode);
+        //     pathNode = pathNode.prevNodes[0];
+        // }
+        // // path.Insert(0, pathNode);
         
         return GetAllPaths(end, new List<Node>());
     }
@@ -86,21 +86,19 @@ public class PathFinding
     public static List<List<Node>> GetAllPaths(Node end, List<Node> pathSoFar)
     {
         List<List<Node>> pathList = new List<List<Node>>();
-        
-        Node pathNode = pathSoFar.Count > 0 ? pathSoFar[0] : end;
+
+        Node pathNode = end; // pathSoFar.Count > 0 ? pathSoFar[0] : end;
         if (pathNode.prevNodes.Count > 0)
         {
             pathSoFar.Insert(0, pathNode);
-
-            foreach (Node prev in pathNode.prevNodes)
-            {
+            foreach (Node prev in pathNode.prevNodes) {
                 pathList = pathList.Union(GetAllPaths(prev, new List<Node>(pathSoFar))).ToList();
             }
             // pathNode = pathNode.prevNodes[0];
             return pathList;
         }
-        else 
-            return new List<List<Node>>(){pathSoFar};
+
+        return new List<List<Node>>(){pathSoFar};
     }
     
     public static List<(Node, Vector2Int dir)> GetPossibleDirections(Node node, Vector2Int[] directions)   
