@@ -2,7 +2,7 @@ namespace AoC2024;
 
 public class Day23
 {
-	struct Computer
+	struct Computer : IEquatable<Computer>
 	{
 		public string name;
 		public HashSet<Computer> siblings = new HashSet<Computer>();
@@ -11,25 +11,40 @@ public class Day23
 			name = null;
 		}
 		public override string ToString() => name;
+		public bool Equals(Computer other) => name == other.name;
+		public override bool Equals(object? obj) => obj is Computer other && Equals(other);
+		public override int GetHashCode() => name.GetHashCode();
 	}
 			
 	public void Run(List<string> input)
 	{
 		List<(string, string)> connections = input.Select(line => (line.Split('-')[0], line.Split('-')[1])).ToList();
-		HashSet<Computer> computers = new HashSet<Computer>();
-		List<HashSet<Computer>> trueGroups = new List<HashSet<Computer>>();
-		connections.ForEach(conn => Connect(computers, trueGroups, conn.Item1, conn.Item2));
-
-		List<List<Computer>> threeGroups = SplitIn3(trueGroups);
-		List<List<Computer>> uniqueGroups = threeGroups.Select(set => set.ToList().OrderBy(c => c.name).ToList()).DistinctBy(l => string.Join(',', l)).ToList(); 
+		Dictionary<string, Computer> computers = new Dictionary<string, Computer>();
+		List<(Computer, Computer)> computerConnections = connections.Select(conn => (GetOrAddComputer(conn.Item1, computers), GetOrAddComputer(conn.Item2, computers))).ToList();
 		
-		// uniqueGroups.ForEach(l => Console.WriteLine(string.Join(',', l)));
+		// group computers in sets
+		List<HashSet<Computer>> groups = new List<HashSet<Computer>>();
+		computerConnections.ForEach(conn => Connect(groups, conn.Item1, conn.Item2));
+
+		// split larger groups in 3-element lists, and remove duplicates
+		List<List<Computer>> threeGroups = SplitIn3(groups);
+		List<List<Computer>> uniqueGroups = threeGroups.Select(set => set.ToList().OrderBy(c => c.name).ToList()).DistinctBy(l => string.Join(',', l)).ToList(); 
+
+		// Part 1
 		int part1 = uniqueGroups.Count(group => group.Count == 3 && group.Any(c => c.name.StartsWith('t')));
 		Console.WriteLine($"Part 1: {part1}");
 		
 		// Part 2
-		HashSet<Computer> largest = trueGroups.MaxBy(l => l.Count());
+		HashSet<Computer> largest = groups.MaxBy(l => l.Count());
 		Console.WriteLine($"Part 2: {string.Join(',', largest.OrderBy(c => c.name).Select(l => string.Join(',', l)))}");
+	}
+
+	private Computer GetOrAddComputer(string computerName, Dictionary<string, Computer> computers)
+	{
+		if (computers.ContainsKey(computerName)) return computers[computerName];
+		Computer computer = new Computer(){name = computerName};
+		computers.Add(computerName, computer);
+		return computer;
 	}
 
 	private List<List<Computer>> SplitIn3(List<HashSet<Computer>> listOfLists)
@@ -44,10 +59,6 @@ public class Day23
 				transformedList.Add(sublist.ToList());
 			}
 		}
-
-		// foreach (var sublist in transformedList) {
-			// Console.WriteLine($"Sublist of {string.Join(',', sublist)}");
-		// }
 		
 		return transformedList;
 	}
@@ -77,15 +88,10 @@ public class Day23
 		return combinations;
 	}
 
-	private void Connect(HashSet<Computer> computers, List<HashSet<Computer>> groups, string computer1Name, string computer2Name)
+	private void Connect(List<HashSet<Computer>> groups, Computer computer1, Computer computer2)
 	{
-		Computer computer1 = computers.FirstOrDefault(c => c.name == computer1Name, new Computer(){name = computer1Name});
-		Computer computer2 = computers.FirstOrDefault(c => c.name == computer2Name, new Computer(){name = computer2Name});
-		
 		computer1.siblings.Add(computer2);
 		computer2.siblings.Add(computer1);
-		computers.Add(computer1);
-		computers.Add(computer2);
 		
 		HashSet<Computer> toAddGroup = null;
 		foreach (var group in groups) 
@@ -93,17 +99,14 @@ public class Day23
 			// all computers must be siblings of these two
 			if (group.All(c => (c.Equals(computer1) && c.siblings.Contains(computer2)) ||
 										(c.Equals(computer2) && c.siblings.Contains(computer1)) ||
-										c.siblings.Contains(computer1) && c.siblings.Contains(computer2)))
-			{
+										c.siblings.Contains(computer1) && c.siblings.Contains(computer2))) {
 				group.Add(computer1);
 				group.Add(computer2);
 			}
 		}
 		if (toAddGroup == null) {
-			toAddGroup = new HashSet<Computer>();
+			toAddGroup = new HashSet<Computer>(){computer1, computer2};
 			groups.Add(toAddGroup);
-			toAddGroup.Add(computer1);
-			toAddGroup.Add(computer2);
 		}
 	}
 }
