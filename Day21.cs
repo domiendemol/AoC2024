@@ -35,48 +35,49 @@ public class Day21
         Dictionary<(Node, Node), List<List<Node>>> robotPathLengths = new Dictionary<(Node, Node), List<List<Node>>>();
         _robotGraph.SelectMany(a => _robotGraph.Select(b => ( a, b ))).ToList().ForEach(nodeT => robotPathLengths.Add((nodeT.Item1, nodeT.Item2), PathFinding.FindShortestPaths(_robotGraph, nodeT.Item1, nodeT.Item2, _robotDirections)));
        
-        List<Sequence> fullSeq = GetFullRobotSequence("456A", 3, robotPathLengths, doorPathLengths);
-        fullSeq = fullSeq.DistinctBy(seq => seq.path).OrderBy(seq => seq.path.Length).ToList();
-        Console.WriteLine($"Part 1, nr paths: {fullSeq.Count}");
-        Console.WriteLine($"Part 1, shortest: {fullSeq.First().path}");
-        Console.WriteLine($"Part 1, expected: <A^A>^^AvvvA");
-        Console.WriteLine($"Part 1, expected: v<<A>>^A<A>AvA<^AA>A<vAAA>^A");
-        Console.WriteLine($"Part 1, expected: <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A");
+        // TODO later: take into account every robot returns to A (to optimize)
+        
+        List<string> fullPath = GetFullSplitRobotSequence("456A", 3, robotPathLengths, doorPathLengths);
+        Console.WriteLine($"Part 1, length:   {fullPath.Sum(part => part.Length)}");
+        Console.WriteLine($"Part 1, expect:   64");
+        Console.WriteLine($"Part 1, shortest: {string.Join(", ", fullPath)}");
         
         long complexity = 0;
         foreach (string line in input)
         {
-            fullSeq = GetFullRobotSequence(line, 3, robotPathLengths, doorPathLengths);
-            fullSeq = fullSeq.OrderBy(seq => seq.path.Length).ToList();
-            Console.WriteLine(fullSeq.First().path.Length + " * " +int.Parse(line.Substring(0, 3)));
-            complexity += fullSeq.First().path.Length * int.Parse(line.Substring(0, 3));
+            List<string> fullSeq = GetFullSplitRobotSequence(line, 3, robotPathLengths, doorPathLengths);
+            Console.WriteLine(fullSeq.Sum(part => part.Length) + " * " +int.Parse(line.Substring(0, 3)));
+            complexity += fullSeq.Sum(part => part.Length) * int.Parse(line.Substring(0, 3));
         }
         Console.WriteLine($"Part 1: {complexity}");
     }
 
-    private List<Sequence> GetFullRobotSequence(string code, int nrRobots, Dictionary<(Node, Node), List<List<Node>>> robotPathLengths, Dictionary<(Node, Node), List<List<Node>>> doorPathLengths)
+    private List<string> GetFullSplitRobotSequence(string code, int nrRobots, Dictionary<(Node, Node), List<List<Node>>> robotPathLengths, Dictionary<(Node, Node), List<List<Node>>> doorPathLengths)
     {
-        List<Sequence> totalSequences = new List<Sequence>(){new Sequence()};
-        Node doorStart = _doorGraph.Find(n => n.id == 'A')!; // A
-        Node robotStart = _robotGraph.Find(n => n.id == 'A')!; // A
-        Node[] robotPositions = new Node[nrRobots]; // fill with robotStart node (except first one)
-        Enumerable.Range(0, nrRobots).ToList().ForEach(i => robotPositions[i] = i == 0 ? doorStart : robotStart);
-        totalSequences[0].robotPositions = robotPositions;
+        List<string> result = new List<string>();
         
         // for each CODE key
-        for (int i = 0; i < code.Length; i++) {
-            var robotPaths = GetRobotSequence(code[i], doorPathLengths, robotPathLengths, totalSequences, nrRobots, 0);
-            if (DEBUG) Console.WriteLine($"{code[i]}: {robotPaths.Count} > {totalSequences.Count}");
-            totalSequences = robotPaths;
+        for (int i = 0; i < code.Length; i++) 
+        {
+            List<Sequence> startSeq = new List<Sequence>(){new Sequence()};
+            Node doorStart = _doorGraph.Find(n => n.id == (i== 0 ? 'A' : code[i-1]))!; // A
+            Node robotStart = _robotGraph.Find(n => n.id == 'A')!; // A
+            Node[] robotPositions = new Node[nrRobots]; // fill with robotStart node (except first one)
+            Enumerable.Range(0, nrRobots).ToList().ForEach(i => robotPositions[i] = i == 0 ? doorStart : robotStart);
+            startSeq[0].robotPositions = robotPositions;
+            
+            var robotPaths = GetRobotSequence(code[i], doorPathLengths, robotPathLengths, startSeq, nrRobots, 0).OrderBy(seq => seq.path.Length).ToList();
+            if (DEBUG) Console.WriteLine($"{code[i]}: {robotPaths.Count}");
+            result.Add(robotPaths.First().path);
         }
 
-        return totalSequences;
+        return result;
     }
-
+    
+    // do it for every path/sequence we found so far
     private List<Sequence> GetRobotSequence(char targetOutputKey, Dictionary<(Node, Node), List<List<Node>>> doorPathLengths, Dictionary<(Node, Node), List<List<Node>>> robotPathLengths,
                                             List<Sequence> prevSeqList, int nrRobots, int robot)
     {
-        // do it for every path/sequence we found so far
         return prevSeqList.SelectMany(prevSequence => GetRobotSequence(targetOutputKey, doorPathLengths, robotPathLengths, prevSequence, nrRobots, robot)).ToList();
     }
     
@@ -102,21 +103,18 @@ public class Day21
         {
             Sequence newSequence = new Sequence(previousSequence);
             List<Sequence> newStepSeqs = new List<Sequence>(){newSequence}; // for this step in this path
-            string thisRobotInputPPath = "";
             foreach (Node step in path)
             {
                 char newTargetKey = GetNextKey(step.pos, newSequence.robotPositions[robot].pos);
-                thisRobotInputPPath += newTargetKey;
                 newSequence.robotPositions[robot] = step;
 
                 newStepSeqs = newStepSeqs.Select(seq => new Sequence(seq)).ToList();
                 newStepSeqs.ForEach(seq => seq.robotPositions[robot] = step);
 
                 List<Sequence> nextRobotPaths = GetRobotSequence(newTargetKey, doorPathLengths, robotPathLengths, newStepSeqs, nrRobots, robot + 1);
-                // nextRobotPaths = GetRobotSequence('A', doorPathLengths, robotPathLengths, nextRobotPaths, nrRobots, robot + 1);
                 newStepSeqs = nextRobotPaths;
-                finalInputSeqs = nextRobotPaths;
             }
+            finalInputSeqs.AddRange(newStepSeqs);
         }
         
         if (finalInputSeqs.Count == 0) finalInputSeqs.Add(previousSequence);
@@ -146,12 +144,9 @@ public class Day21
         foreach (List<Node> path in paths ?? Enumerable.Empty<List<Node>>())
         {
             Sequence newSequence = new Sequence(previousSequence);
-            string thisRobotInputPPath = "";
             foreach (Node step in path)
             {
                 char newTargetKey = GetNextKey(step.pos, newSequence.robotPositions[robot].pos);
-                thisRobotInputPPath += newTargetKey;
-
                 newSequence = new Sequence(newSequence);
                 newSequence.AddPath(""+newTargetKey, robot, step);
             }
