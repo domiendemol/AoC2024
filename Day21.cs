@@ -53,15 +53,17 @@ public class Day21
         }
         Console.WriteLine($"Part 1: {complexity}");
 
-        for (int i = 4; i < 6; i++)
+        for (int i = 4; i < 19; i++)
         {
             fullPath = GetFullSplitRobotSequence("456A", i, robotPathLengths, doorPathLengths);
-            Console.WriteLine(i);
+            Console.WriteLine($"{i}, cache size: {_cache.Count}");
+            Console.WriteLine(fullPath.Sum(part => part.Length));
         }
         // fullPath = GetFullSplitRobotSequence("456A", 3, robotPathLengths, doorPathLengths);
         // Console.WriteLine($"Part 2, shortest: {string.Join(", ", fullPath)}");
-        fullPath = GetFullSplitRobotSequence("456A", 10, robotPathLengths, doorPathLengths);
-        Console.WriteLine($"Part 2, shortest: {string.Join(", ", fullPath)}");
+        // fullPath = GetFullSplitRobotSequence("456A", 26, robotPathLengths, doorPathLengths);
+        
+        // Console.WriteLine($"Part 2, shortest: {string.Join(", ", fullPath)}");
 
     }
 
@@ -98,9 +100,14 @@ public class Day21
                                         Sequence previousSequence, int nrRobots, int robot)
     {
         if (robot == nrRobots - 1) return GetFinalRobotSequence(targetOutputKey, doorPathLengths, robotPathLengths, previousSequence, nrRobots, robot);
-        if (robot > 0 && 
-            previousSequence.robotPositions[robot].id == 'A' 
-            && _cache.ContainsKey((targetOutputKey, nrRobots-robot))) return new List<Sequence>() { _cache[(targetOutputKey, nrRobots-robot)] };
+        if (robot > 0 && previousSequence.robotPositions[robot].id == 'A'
+                      && _cache.ContainsKey((targetOutputKey, nrRobots - robot)))
+        {
+            Sequence cachedSeq = new Sequence(previousSequence);
+            cachedSeq.path += _cache[(targetOutputKey, nrRobots - robot)].path;
+            cachedSeq.robotPositions[robot] = _cache[(targetOutputKey, nrRobots - robot)].robotPositions[robot];
+            return new List<Sequence>() { cachedSeq };
+        }
         
         List<Sequence> finalInputSeqs = new List<Sequence>(){};
 
@@ -139,10 +146,23 @@ public class Day21
         finalInputSeqs = GetRobotSequence('A', doorPathLengths, robotPathLengths, finalInputSeqs, nrRobots, robot+1);
         
         if (DEBUG) finalInputSeqs.ForEach(seq => Console.WriteLine($"GetRobotSequence key:{targetOutputKey} robot:{robot} {string.Join(',', seq.path)}"));
-        if (robot > 0 && previousSequence.robotPositions[robot].id == 'A' && !_cache.ContainsKey((targetOutputKey, nrRobots-robot))) _cache[(targetOutputKey, nrRobots-robot)] = finalInputSeqs.OrderBy(s => s.path.Length).First();
+        if (previousSequence.robotPositions[robot].id == 'A') 
+            TryAddToCache(targetOutputKey, robot, nrRobots, previousSequence, finalInputSeqs);
         return finalInputSeqs;
     }
 
+    private void TryAddToCache(char targetOutputKey, int robot, int nrRobots, Sequence previousSequence, List<Sequence> newInputSeqs)
+    {
+        if (robot == 0) return;
+        if (_cache.ContainsKey((targetOutputKey, nrRobots-robot))) return;
+        // previousSequence.robotPositions[robot].id == 'A' && !_cache.ContainsKey((targetOutputKey, nrRobots-robot))) 
+        Sequence shortestSeq = newInputSeqs.OrderBy(s => s.path.Length).First();
+        if (previousSequence.path != null) shortestSeq.path = shortestSeq.path.Substring(previousSequence.path.Length); // cut off previous path
+
+        _cache[(targetOutputKey, nrRobots - robot)] = shortestSeq;
+    }
+    
+    
     private List<Sequence> GetFinalRobotSequence(char targetOutputKey, Dictionary<(Node, Node), List<List<Node>>> doorPathLengths, Dictionary<(Node, Node), List<List<Node>>> robotPathLengths,
                                                     Sequence previousSequence, int nrRobots, int robot)
     {
