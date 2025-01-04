@@ -22,6 +22,8 @@ public class Day21
 
     private List<Node> _doorGraph;
     private List<Node> _robotGraph;
+
+    private Dictionary<(char target, int depth),Sequence> _cache = new Dictionary<(char target, int depth), Sequence>();
     
     public void Run(List<string> input)
     {
@@ -50,6 +52,17 @@ public class Day21
             complexity += fullSeq.Sum(part => part.Length) * int.Parse(line.Substring(0, 3));
         }
         Console.WriteLine($"Part 1: {complexity}");
+
+        for (int i = 4; i < 6; i++)
+        {
+            fullPath = GetFullSplitRobotSequence("456A", i, robotPathLengths, doorPathLengths);
+            Console.WriteLine(i);
+        }
+        // fullPath = GetFullSplitRobotSequence("456A", 3, robotPathLengths, doorPathLengths);
+        // Console.WriteLine($"Part 2, shortest: {string.Join(", ", fullPath)}");
+        fullPath = GetFullSplitRobotSequence("456A", 10, robotPathLengths, doorPathLengths);
+        Console.WriteLine($"Part 2, shortest: {string.Join(", ", fullPath)}");
+
     }
 
     private List<string> GetFullSplitRobotSequence(string code, int nrRobots, Dictionary<(Node, Node), List<List<Node>>> robotPathLengths, Dictionary<(Node, Node), List<List<Node>>> doorPathLengths)
@@ -59,11 +72,11 @@ public class Day21
         // for each CODE key
         for (int i = 0; i < code.Length; i++) 
         {
-            List<Sequence> startSeq = new List<Sequence>(){new Sequence()};
-            Node doorStart = _doorGraph.Find(n => n.id == (i== 0 ? 'A' : code[i-1]))!; // A
+            List<Sequence> startSeq = new List<Sequence>(){new Sequence(26)};
+            Node doorStart = _doorGraph.Find(n => n.id == (i== 0 ? 'A' : code[i-1]))!; 
             Node robotStart = _robotGraph.Find(n => n.id == 'A')!; // A
-            Node[] robotPositions = new Node[nrRobots]; // fill with robotStart node (except first one)
-            Enumerable.Range(0, nrRobots).ToList().ForEach(i => robotPositions[i] = i == 0 ? doorStart : robotStart);
+            Node[] robotPositions = new Node[26]; // fill with robotStart node (except first one)
+            Enumerable.Range(0, 26).ToList().ForEach(i => robotPositions[i] = i == 0 ? doorStart : robotStart);
             startSeq[0].robotPositions = robotPositions;
             
             var robotPaths = GetRobotSequence(code[i], doorPathLengths, robotPathLengths, startSeq, nrRobots, 0).OrderBy(seq => seq.path.Length).ToList();
@@ -85,6 +98,9 @@ public class Day21
                                         Sequence previousSequence, int nrRobots, int robot)
     {
         if (robot == nrRobots - 1) return GetFinalRobotSequence(targetOutputKey, doorPathLengths, robotPathLengths, previousSequence, nrRobots, robot);
+        if (robot > 0 && 
+            previousSequence.robotPositions[robot].id == 'A' 
+            && _cache.ContainsKey((targetOutputKey, nrRobots-robot))) return new List<Sequence>() { _cache[(targetOutputKey, nrRobots-robot)] };
         
         List<Sequence> finalInputSeqs = new List<Sequence>(){};
 
@@ -93,7 +109,7 @@ public class Day21
         var pathLengths = robot == 0 ? doorPathLengths : robotPathLengths;
         
         Node endNode = targetKeyboardGraph.Find(n => n.id == targetOutputKey)!;
-        List<List<Node>>? paths = pathLengths[(previousSequence.robotPositions[robot], endNode)]; // paths to simulate (on previous keyboard)
+        List<List<Node>>? paths = pathLengths[(previousSequence.robotPositions[robot], endNode)]; // paths to simulate (on output keyboard)
         
         string pathDebug = paths == null ? "/" : string.Join(',', paths.Select(list => string.Join("", list)));
         if (DEBUG) Console.WriteLine($"GetRobotSequence key:{targetOutputKey} robot:{robot}  path:{previousSequence.robotPositions[robot]} -> {endNode} ({pathDebug} options)");
@@ -123,6 +139,7 @@ public class Day21
         finalInputSeqs = GetRobotSequence('A', doorPathLengths, robotPathLengths, finalInputSeqs, nrRobots, robot+1);
         
         if (DEBUG) finalInputSeqs.ForEach(seq => Console.WriteLine($"GetRobotSequence key:{targetOutputKey} robot:{robot} {string.Join(',', seq.path)}"));
+        if (robot > 0 && previousSequence.robotPositions[robot].id == 'A' && !_cache.ContainsKey((targetOutputKey, nrRobots-robot))) _cache[(targetOutputKey, nrRobots-robot)] = finalInputSeqs.OrderBy(s => s.path.Length).First();
         return finalInputSeqs;
     }
 
@@ -205,9 +222,9 @@ public class Day21
         public int lastRobot;
         public Node[] robotPositions;
 
-        public Sequence()
+        public Sequence(int nrRobots)
         {
-            this.robotPositions = new Node[3];
+            this.robotPositions = new Node[26];
             // Node doorStart = doorGraph.Find(n => n.id == 'A')!; // A
             // Node robotStart = robotGraph.Find(n => n.id == 'A')!; // A
         }
