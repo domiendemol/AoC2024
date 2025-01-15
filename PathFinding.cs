@@ -108,7 +108,7 @@ public class PathFinding
         {
             Vector2Int nextPos = node.pos + directions[i];
             Node next = node.siblings.FirstOrDefault(n => n.pos == node.pos + directions[i], null);
-            if (next != null)
+            if (next != null && next != node)
             {
                 result.Add((next, nextPos));
             }

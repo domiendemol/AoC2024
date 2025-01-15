@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
@@ -125,4 +126,13 @@ public static class Utils
     {
         return (a / GCF(a, b)) * b;
     }
+    
+    public static void AddRange<T>(this ConcurrentBag<T> @this, IEnumerable<T> toAdd)
+    {
+        foreach (var element in toAdd)
+        {
+            @this.Add(element);
+        }
+    }
+
 }
