@@ -2,15 +2,14 @@ namespace AoC2024;
 
 public class Day7
 { 
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         List<List<long>> equations = input.Select(line => line.Split(' ').Select((val, i) => Convert.ToInt64(i == 0 ? val.Substring(0,val.Length-1) : val)).ToList()).ToList();
         
         long part1 = equations.Sum(eq => CalcPart(eq, eq[1], 2, false));
-        Console.WriteLine($"Part 1: {part1}");
-        
         long part2 = equations.Sum(eq => CalcPart(eq, eq[1], 2, true));
-        Console.WriteLine($"Part 2: {part2}");
+        
+        return (part1.ToString(), part2.ToString());
     }
 
     private long CalcPart(List<long> equation, long currTotal, int index, bool concat) 

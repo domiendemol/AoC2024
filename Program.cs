@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using Spectre.Console;
 
 namespace AoC2024
 {
     static class Program
     {
         private const string BENCHMARK = "BENCHMARK";
-        private const int DAY = 21;
+        private const int DAY = 25;
         
         public static void Main(string[] args)
         {
@@ -18,18 +19,19 @@ namespace AoC2024
                 Benchmark();
             }
             else {
-                RunDay(DAY, arg == "TEST");
+                AnsiConsole.Write(new Rule($"[bold]Day {DAY}[/]").LeftJustified());
+                (string, string) result = RunDay(DAY, arg == "TEST");
+                AnsiConsole.MarkupLine($"- Part 1: [blue]{result.Item1}[/]");
+                AnsiConsole.MarkupLine($"- Part 2: [blue]{result.Item2}[/]");
             }
 
             stopwatch.Stop();
             TimeSpan stopwatchElapsed = stopwatch.Elapsed;
-            Console.WriteLine($"Completed in: {Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}ms");
+            AnsiConsole.MarkupLine($"Completed in: [bold]{Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}[/] ms");
         }
 
-        static void RunDay(int day, bool test)
+        static (string, string) RunDay(int day, bool test)
         {
-            Console.WriteLine($"=> [Day {day}]");
-            
             // REFLECTIOOON
             Type type = Type.GetType($"AoC2024.Day{day}")!;
             MethodInfo? method = type.GetMethod("Run");
@@ -37,26 +39,44 @@ namespace AoC2024
             string testSuffix = test ? "_test" : "";
             if (!File.Exists($"input/day{day}{testSuffix}.txt")) {
                 Console.WriteLine("Error: input file does not exist");
-                return;
+                return (null, null);
             }
-            method.Invoke(obj, new object[]{File.ReadAllText($"input/day{day}{testSuffix}.txt").Trim().Split('\n').ToList()});
+            return ((string, string)) method.Invoke(obj, new object[]{File.ReadAllText($"input/day{day}{testSuffix}.txt").Trim().Split('\n').ToList()});
         }
         
         static void Benchmark()
         {
             Console.WriteLine("Running full benchmark: ");
-            Console.WriteLine("========================");
-            for (int i = 1; i <= DAY; i++)
-            {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
+            
+            var table = new Table();
+            table.Border(TableBorder.Rounded);
+            AnsiConsole.Live(table)
+                .Start(ctx => 
+                {
+                    table.AddColumn("[bold yellow]Day[/]");
+                    table.AddColumn("[bold yellow]Part 1[/]");
+                    table.AddColumn("[bold yellow]Part 2[/]");
+                    table.AddColumn("[bold yellow]Time[/]");
+                    ctx.Refresh();
+
+                    for (int i = 1; i <= DAY; i++)
+                    {
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        table.AddRow($"[blue]Day {i}[/]", "-", "-", "-");
+                        ctx.Refresh();
+
+                        (string, string) result = RunDay(i, false);
                 
-                RunDay(i, false);
-                
-                stopwatch.Stop();
-                TimeSpan stopwatchElapsed = stopwatch.Elapsed;
-                Console.WriteLine($"Time: {Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}ms");
-            }
+                        stopwatch.Stop();
+                        TimeSpan stopwatchElapsed = stopwatch.Elapsed;
+                        table.RemoveRow(table.Rows.Count - 1);
+                        string color = Convert.ToInt32(stopwatchElapsed.TotalMilliseconds) >= 1000 ? "red" : "green";
+                        table.AddRow($"[blue]Day {i}[/]", result.Item1, result.Item2, $"[{color}]{Convert.ToInt32(stopwatchElapsed.TotalMilliseconds)}[/] ms");
+                        ctx.Refresh();
+                    }
+                });
         }
     }
 }

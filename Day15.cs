@@ -19,12 +19,12 @@ public class Day15
         { 'v', new Vector2Int(1,0) },
     };
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         // Part 1
         ParseInput(input, false);
         Enumerable.Range(0, _moves.Count).ToList().ForEach(i => Move(i));
-        Console.WriteLine($"Part 1: {Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i))}");
+        int part1 = Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i));
         
         // Part 2
         ParseInput(input, true);
@@ -35,8 +35,10 @@ public class Day15
             // Console.WriteLine($"{i}, next: {_moves.TryGetValue(i+1)}");
             // Console.ReadLine();
         }
-        Console.WriteLine($"Part 2: {Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i))}");
+        int part2 = Enumerable.Range(0,_grid.GetLength(0)*_grid.GetLength(1)).Sum(i => GetGPS(i));
         // Utils.PrintCharArray(_grid);
+        
+        return (part1.ToString(), part2.ToString());
     }
 
     private void ParseInput(List<string> input, bool widen)

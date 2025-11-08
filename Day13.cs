@@ -13,7 +13,7 @@ public class Day13
         public double CalcB(long a) => (A - a * ax) / (double) bx;  // b = (A − a*ax) / bx
     }
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         var numbers = input.Where(line => line.Length > 0).SelectMany(line => Regex.Matches(line, @"(\d+)")).ToList();
         List<Machine> machines = new List<Machine>();
@@ -35,8 +35,8 @@ public class Day13
         // in our var names:
         // a = (B*bx - by*A) / (ay*bx - by*ax)   and    b = (A − a*ax) / bx
         
-        Console.WriteLine($"Part 1: {machines.Sum(machine => GetTokens(machine))}");
-        Console.WriteLine($"Part 2: {machines.Sum(machine => GetTokens(machine, 10000000000000))}");
+        return (machines.Sum(machine => GetTokens(machine)).ToString(),
+                machines.Sum(machine => GetTokens(machine, 10000000000000)).ToString());
     }
 
     private long GetTokens(Machine machine, long toAdd = 0)

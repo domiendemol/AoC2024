@@ -9,7 +9,7 @@ public class Day17
     private int[] _instructions;
     private int[] _operands;
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         // read 3 registers and program
         long[] register = new long[3];
@@ -25,9 +25,10 @@ public class Day17
             _operands[i / 2] = int.Parse(program[i+1]);
         }
         
-        Console.WriteLine($"Part 1: {string.Join(',', ExecuteProgram(register))}");
+        string part1 = string.Join(',', ExecuteProgram(register));
         
         // Part 2
+        string part2;
         string expected = string.Join(',', program);
         if (BRUTE)
         {
@@ -73,51 +74,53 @@ public class Day17
             Console.WriteLine(cycle);
             cycle = 8;
             // count cycle per program/output digit
-            long part2 = 0;
+            long part2l = 0;
             for (int i = 0; i < _instructions.Length; i++)
             {
-                part2 += (long) (_instructions[i] * Math.Pow(cycle, (i*2)));
-                Console.WriteLine($"Part 2: {part2}");
-                part2 += (long) (_operands[i] * Math.Pow(cycle, (i*2)+1));
-                Console.WriteLine($"Part 2: {part2}");
+                part2l += (long) (_instructions[i] * Math.Pow(cycle, (i*2)));
+                Console.WriteLine($"Part 2: {part2l}");
+                part2l += (long) (_operands[i] * Math.Pow(cycle, (i*2)+1));
+                Console.WriteLine($"Part 2: {part2l}");
             }
             
             // Console.WriteLine($"Register: {string.Join(',', register)}");
-            Console.WriteLine($"Part 2: {a}");
-            Console.WriteLine($"Part 2: {part2}");
+            // Console.WriteLine($"Part 2: {a}");
+            part2 = part2l.ToString();
         }
         else
         {
-                // check every number of our output, starting from the back
-                List<long> queue = new List<long>(){0}; 
-                for (int i = program.Length-1; i >= 0; i--)
+            // check every number of our output, starting from the back
+            List<long> queue = new List<long>(){0}; 
+            for (int i = program.Length-1; i >= 0; i--)
+            {
+                // Console.WriteLine($"Checking: {program[i]}");
+                List<long> prevA = new List<long>();
+                
+                // loop our previously found values (each possible option for the previous digit)
+                foreach (long a in queue)
                 {
-                    // Console.WriteLine($"Checking: {program[i]}");
-                    List<long> prevA = new List<long>();
-                    
-                    // loop our previously found values (each possible option for the previous digit)
-                    foreach (long a in queue)
+                    // try every number til 8 (further not necessary)
+                    for (int k = 0; k < 8; k++)
                     {
-                        // try every number til 8 (further not necessary)
-                        for (int k = 0; k < 8; k++)
-                        {
-                            // queue nr times 8 (cause algo divides by 8 each time) + k
-                            long aCur = (a * 8) + k;
-                            register[0] = aCur;
-                            List<int> output = ExecuteProgram(register);
-                            if (output[0] == Int32.Parse(program[i])) {
-                                // yes, this a matches -> store it
-                                prevA.Add(aCur);
-                                // Console.WriteLine(string.Join(',', output) + " - " + aCur + " MATCH");
-                            }
+                        // queue nr times 8 (cause algo divides by 8 each time) + k
+                        long aCur = (a * 8) + k;
+                        register[0] = aCur;
+                        List<int> output = ExecuteProgram(register);
+                        if (output[0] == Int32.Parse(program[i])) {
+                            // yes, this a matches -> store it
+                            prevA.Add(aCur);
+                            // Console.WriteLine(string.Join(',', output) + " - " + aCur + " MATCH");
                         }
                     }
-
-                    queue = prevA; // use new found values as next to check
                 }
-                
-                Console.WriteLine($"Part 2: {queue[0]}");
+
+                queue = prevA; // use new found values as next to check
+            }
+            
+            part2 = queue[0].ToString();
         }
+
+        return (part1, part2);
     }
 
     private void TestDigit(int index)

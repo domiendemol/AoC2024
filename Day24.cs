@@ -5,7 +5,7 @@ namespace AoC2024;
 
 public class Day24
 {
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         Dictionary<string, int> wires = new();
         List<Gate> gates = new();
@@ -19,12 +19,13 @@ public class Day24
         ExecAllGates(wires, ref gates);
         string binaryString = string.Join("", wires.Where(w => w.Key.StartsWith("z")).OrderBy(kvp => kvp.Key).Reverse().Select(kvp => kvp.Value));
         // Console.WriteLine(binaryString);
-        Console.WriteLine($"Part 1: {Convert.ToInt64(binaryString,2)}");
+        long part1 = Convert.ToInt64(binaryString,2);
+        string part2 = Part2(wires, gates);
         
-        Part2(wires, gates);
+        return (part1.ToString(), part2);
     }
     
-    private void Part2(Dictionary<string, int> wires, List<Gate> gates, bool debug = false)
+    private string Part2(Dictionary<string, int> wires, List<Gate> gates, bool debug = false)
     {
         List<Gate> andGates = gates.Where(g => g.op == "AND").ToList();
         List<Gate> xorGates = gates.Where(g => g.op == "XOR").ToList();
@@ -137,9 +138,10 @@ public class Day24
         // exclude z00
         finalWrongWires = finalWrongWires.Distinct().ToList();
         finalWrongWires.Sort();
-        Console.WriteLine($"Part 2: {string.Join(",", finalWrongWires)}");
         // Some manual work was necessary to reveal ksv/z06, tqq/z20, z39/ckb, and kbs/nbd!! So: ckb,kbs,ksv,nbd,tqq,z06,z20,z39
         // tweaked the algorithm based on that 
+
+        return string.Join(",", finalWrongWires);
     }
 
     private Gate FindGateWithInput(List<Gate> gates, string wireIn1) => gates.Find(g => g.in1 == wireIn1 || g.in2 == wireIn1);

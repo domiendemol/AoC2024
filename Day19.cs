@@ -5,7 +5,7 @@ public class Day19
 	private Dictionary<string, bool> _validComboCache = new();
 	private Dictionary<string, long> _validComboCountCache = new();
 	
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		List<string> towels = input[0].Split(", ").Where(s => s.Trim().Length > 0).OrderBy(t => t.Length).Reverse().ToList();
 		List<string> patterns = input.Skip(2).ToList();
@@ -21,11 +21,12 @@ public class Day19
 		singularTowels = singularTowels.OrderBy(t => t.Length).Reverse().ToList();
 		
 		List<string> validCombos = patterns.Where(p => TryPattern(p, singularTowels)).ToList(); 
-		Console.WriteLine($"Part 1: {validCombos.Count}");
+		int part1 = validCombos.Count();
 		
 		// Part 2
 		// use same recursive method but count ALL options (and add super important cache)
-		Console.WriteLine($"Part 2: {validCombos.Sum(combo => GetPatternCount(combo, towels))}");
+		return (part1.ToString(), 
+				validCombos.Sum(combo => GetPatternCount(combo, towels)).ToString());
 	}
 
 	// recursive  

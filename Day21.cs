@@ -29,7 +29,7 @@ public class Day21
 
 	private Dictionary<(string, int depth), long> _cache = new Dictionary<(string, int depth), long>();
     
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		// calc shortest paths for all key combis for  the 2 keyboard designs
 		// - door
@@ -49,7 +49,8 @@ public class Day21
 			if (DEBUG) Console.WriteLine(fullSeq + " * " +int.Parse(line.Substring(0, 3)));
 			complexity += fullSeq * int.Parse(line.Substring(0, 3));
 		}
-		Console.WriteLine($"Part 1: {complexity}");
+
+		long part1 = complexity;
 
 		if (DEBUG) _cache.Keys.ToList().ForEach(nodeT => Console.WriteLine($"{(nodeT)} -> {_cache[(nodeT)]}"));
 		
@@ -63,7 +64,9 @@ public class Day21
 				if (i == 26) complexity += fullSeq * long.Parse(line.Substring(0, 3));
 			}
 		}
-		Console.WriteLine($"Part 2: {complexity}");
+		long part2 = complexity;
+		
+		return (part1.ToString(), part2.ToString());
 	}
 
 	private long GetFullRobotSequence(string code, int nrRobots) => GetRobotSequence(code, nrRobots, 0);

@@ -4,11 +4,10 @@ namespace AoC2024;
 
 public class Day3
 {
-	public void Run(List<string> lines)
+	public (string, string) Run(List<string> lines)
 	{
 		var matches = lines.Select(line => Regex.Matches(line, $"mul\\(([0-9]+),([0-9]+)\\)"));
 		long part1 = matches.Sum(mc => mc.Sum(m => Int32.Parse(m.Groups[1].Value) * Int32.Parse(m.Groups[2].Value)));
-		Console.WriteLine($"PART 1: {part1}");
 
 		// part 2
 		// DO NOT TREAT THEM AS SEPARATE LINES
@@ -16,7 +15,8 @@ public class Day3
 		string merged = string.Join(" ", lines.ToArray()); 
 		// split by "don't", then by "do()", and count mul()s
 		long sum = GetTotal(merged.Split("don't()").ToList());
-		Console.WriteLine($"PART 2: {sum}");
+		
+		return (part1.ToString(), sum.ToString());
 	}
 
 	private long GetTotal(List<string> parts)

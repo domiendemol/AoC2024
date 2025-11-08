@@ -2,17 +2,16 @@ namespace AoC2024;
 
 public class Day10
 {
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         // int[,] inputGrid = Utils.ToIntArray(input);
         Dictionary<Vector2Int, int> map = input.SelectMany((line, y) => line.Select((h, x) => (pos: new Vector2Int(x, y), height: (int) char.GetNumericValue(h))))
             .ToDictionary(t => t.pos, t => t.height);
 
         int part1 = map.Keys.Where(k => map[k] == 0).Sum(v => GetTrailHeadsDFS(v, -1, map, new List<Vector2Int>(), new List<Vector2Int>()));
-        Console.WriteLine($"Part 1: {part1}");
         int part2 = map.Keys.Where(k => map[k] == 0).Sum(v => GetTrailHeadRatingsDFS(v, -1, map, new List<Vector2Int>()));
-        Console.WriteLine($"Part 2: {part2}");
 
+        return (part1.ToString(), part2.ToString());
     }
     
     private int GetTrailHeadsDFS(Vector2Int pos, int prevHeight, Dictionary<Vector2Int, int> map, List<Vector2Int> visited, List<Vector2Int> trailheads)

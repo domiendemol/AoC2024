@@ -6,7 +6,7 @@ public class Day16
     private List<Node> _nodes = new List<Node>();
     private Dictionary<Vector2Int, Node> _nodeMap = new Dictionary<Vector2Int, Node>(); // for speeding up TryAddSiblings
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         for (var i = 0; i < input.Count; i++) {
             for (int j = 0; j < input[i].Length; j++)
@@ -20,7 +20,7 @@ public class Day16
         
         // Part 1
         FindShortestPath();
-        Console.WriteLine($"Part 1: {_nodes.First(node => node.id == 'E').cost}");
+        int part1 = _nodes.First(node => node.id == 'E').cost;
         
         // Part 2
         // we stored the previousNodes
@@ -29,8 +29,10 @@ public class Day16
         Node start = _nodes.First(node => node.id == 'E');
         bestNodes.Add(start);
         AddBestPathNodes(start, bestNodes);
-        Console.WriteLine($"Part 2: {bestNodes.Count+1}");
+        int part2 = bestNodes.Count+1;
         // PrintMap(input, bestNodes);
+        
+        return (part1.ToString(), part2.ToString());
     }
 
     // per node, get the 'previous' nodes from in the path

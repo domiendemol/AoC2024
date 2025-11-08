@@ -8,7 +8,7 @@ public class Day12
         public List<Vector2Int> positions;
     }
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         char[,] inputGrid = Utils.ToCharArray(input);
         
@@ -20,9 +20,9 @@ public class Day12
             }
         }
 
-        Console.WriteLine($"Part 1: {regions.Sum(r => GetPrice(r))}");
-        Console.WriteLine($"Part 2: {regions.Sum(r => GetPrice2NewNew(r))}");
         // Console.WriteLine($"Part 2: {regions.Sum(r => GetPrice2New(r))}"); // works for all test cases, not for real input. GRR
+        return (regions.Sum(r => GetPrice(r)).ToString(), 
+                regions.Sum(r => GetPrice2NewNew(r)).ToString());
     }
 
     private void AddToRegion(char plant, Vector2Int pos, List<Region> regions, char[,] inputGrid)

@@ -4,7 +4,7 @@ public class Day9
 {
 	private List<int> _fileSizes = new List<int>();
 	
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		// parse
 		_fileSizes = new List<int>(input[0].Length);
@@ -12,8 +12,8 @@ public class Day9
 		List<int> freeSpaceIndxs = blocks.Select((b, indx) => b == -1 ? indx : -1).Where(i => i != -1).ToList();
 		List<int> fileIndxs = blocks.Select((b, indx) => b != -1 ? indx : -1).Where(i => i != -1).ToList();
 
-		Console.WriteLine($"Part 1: {Part1(new List<int>(blocks), fileIndxs)}");
-		Console.WriteLine($"Part 2: {Part2(new List<int>(blocks), freeSpaceIndxs)}");
+		return (Part1(new List<int>(blocks), fileIndxs).ToString(),
+				Part2(new List<int>(blocks), freeSpaceIndxs).ToString());
 	}
 
 	private long Part1(List<int> blocks, List<int> fileIndxs)

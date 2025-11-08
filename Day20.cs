@@ -10,7 +10,7 @@ public class Day20
     private Dictionary<Node, int> _pathLengthFromCache = new Dictionary<Node, int>(); // from node to end, assuming no cheats
     private Dictionary<Node, int> _pathLengthToCache = new Dictionary<Node, int>(); // from start to node, assuming no cheats
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         for (var i = 0; i < input.Count; i++) {
             for (int j = 0; j < input[i].Length; j++)
@@ -29,11 +29,13 @@ public class Day20
 
         // Approach 2
         List<(int, Node, Node)> pathLengths = GetUniqueCheatedPaths(fullPathLength, 2);
-        Console.WriteLine($"Part 1: {pathLengths.Count(pl => (fullPathLength - pl.Item1) >= 100)}");
+        int part1 = pathLengths.Count(pl => (fullPathLength - pl.Item1) >= 100);
 
         // Part 2
         pathLengths = GetUniqueCheatedPaths(fullPathLength, 20);
-        Console.WriteLine($"Part 2: {pathLengths.Count(pl => (fullPathLength - pl.Item1) >= 100)}");
+        int part2 = pathLengths.Count(pl => (fullPathLength - pl.Item1) >= 100);
+        
+        return (part1.ToString(), part2.ToString());
     }
 
     // loop nodes on path

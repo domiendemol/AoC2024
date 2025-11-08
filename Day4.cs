@@ -4,7 +4,7 @@ public class Day4
 {
     private char[,] _grid;
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         _grid = Utils.ToCharArray(input);
 
@@ -16,8 +16,8 @@ public class Day4
                 if (_grid[i, j] == 'A') part2 += TryFindMasX(i, j);
             }
         }
-        Console.WriteLine($"Part 1: {part1}");
-        Console.WriteLine($"Part 2: {part2}");
+        
+        return (part1.ToString(), part2.ToString());
     }
 
     private int TryFindXmas(int x, int y)

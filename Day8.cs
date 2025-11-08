@@ -8,20 +8,22 @@ public class Day8
         public Vector2Int pos;
     }
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         char[,] inputGrid = Utils.ToCharArray(input);
         List<Antenna> antennas = inputGrid.Cast<char>().
             Select((c, i) => new Antenna { freq = c, pos = new Vector2Int(i/inputGrid.GetLength(1), i%inputGrid.GetLength(0)) }).Where(a => a.freq != '.').ToList();
 
         List<Vector2Int> antinodes = antennas.SelectMany(a => GetAntiNodes(a, antennas)).Where(v => inputGrid.TryGetValue(v.x, v.y) != '\0').Distinct().ToList();
-        Console.WriteLine($"Part 1: {antinodes.Count}");
+        int part1 = antinodes.Count;
    
         antinodes = antennas.SelectMany(a => GetAntiNodes(a, antennas, true)).Where(v => inputGrid.TryGetValue(v.x, v.y) != '\0').Distinct().ToList();
-        Console.WriteLine($"Part 2: {antinodes.Count}");
+        int part2 = antinodes.Count;
         
         // antinodes.ForEach(v => inputGrid[v.x, v.y] = '#');
         // Utils.PrintCharArray(inputGrid);
+
+        return (part1.ToString(), part2.ToString());
     }
 
     private List<Vector2Int> GetAntiNodes(Antenna antenna, List<Antenna> antennas, bool all = false)

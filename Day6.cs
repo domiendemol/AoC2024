@@ -8,13 +8,13 @@ public class Day6
     
     private static Vector2Int[] _directions = {new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(1, 0), new Vector2Int(0,-1)};
 
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         _inputGrid = Utils.ToCharArray(input);
         startPos = FindGuard();
         
         char[,] grid = (char[,])_inputGrid.Clone();
-        Console.WriteLine($"Part 1: {SimulateGuard(grid)}");        
+        int part1 = SimulateGuard(grid);
         
         _walkedGrid = (char[,])grid.Clone();
         
@@ -28,7 +28,8 @@ public class Day6
         Parallel.ForEach(_inputGrid.Cast<char>(), (c, state, index) => {
             if (TryBlock((int) index)) Interlocked.Increment(ref counter);  
         });
-        Console.WriteLine($"Part 2: {counter}");
+        
+        return (part1.ToString(), counter.ToString());
     }
 
     private Vector2Int FindGuard()

@@ -7,7 +7,7 @@ public class Day5
 	private Dictionary<int, List<int>> _after = new Dictionary<int, List<int>>();
 	private Dictionary<int, List<int>> _before = new Dictionary<int, List<int>>();
 	
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		// parse input and store rules in _after/_before
 		var rules = input.Select(line => Regex.Matches(line, @$"([0-9]+)\|([0-9]+)"));
@@ -17,13 +17,13 @@ public class Day5
 		int part1 = input.Where(line => Regex.Match(line, ",").Success).Select(line => line.Split(",")).
 			Where(a => a.Length > 0).Where(pages => IsSectionOrdered(pages)).
 			Sum(r => Convert.ToInt32(r[r.Length/2]));
-		Console.WriteLine($"Part 1: {part1}");
 		
 		// part 2, order them 
 		int part2 = input.Where(line => Regex.Match(line, ",").Success).Select(line => line.Split(",")).
 			Where(a => a.Length > 0).Where(pages => !IsSectionOrdered(pages)).
 			Select(pages => FixOrdering(pages)).Sum(p => p[p.Length/2]);
-		Console.WriteLine($"Part 2: {part2}");
+		
+		return (part1.ToString(), part2.ToString());
 	}
 
 	private int[] FixOrdering(string[] pageStrings)

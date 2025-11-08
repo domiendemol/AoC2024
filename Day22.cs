@@ -11,11 +11,10 @@ public class Day22
 		public Buyer() {}
 	}
 	
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		List<Buyer> buyers = input.Select(line => new Buyer(){secret = Int32.Parse(line)}).ToList(); 
 		long part1 = buyers.Sum(b => CalcSecret(b, 2000));
-		Console.WriteLine($"Part 1: {part1}");
 		
 		// Part 2
 		// get all possible sequences for all our buyers
@@ -25,7 +24,8 @@ public class Day22
 		// order sequences by count, calculate prices for the top 5 (should be enough)
 		var top5 = sequenceCache.OrderByDescending(x => x.Value).Take(5);
 		int max = top5.Max(item => buyers.Sum(b => GetPriceForSequence(b, item.Key.Split(',').Select(c => Int32.Parse(c)).ToArray())));
-		Console.WriteLine($"Part 2: {max}");
+		
+		return (part1.ToString(), max.ToString());
 	}
 
 	private void AddSequencesToCache(Buyer buyer, List<Buyer> buyers, Dictionary<string, int> sequenceCache)

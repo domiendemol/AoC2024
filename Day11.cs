@@ -2,7 +2,7 @@ namespace AoC2024;
 
 public class Day11
 {
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         List<long> stones = input[0].Split(' ').Select(c => Convert.ToInt64(c)).ToList();
         Dictionary<(long nr,  int blinks), long> cache = new Dictionary<(long, int), long>();
@@ -16,10 +16,9 @@ public class Day11
                 cache[(stone, i + 1)] = tStones.Count;
             }        
         }
-        Console.WriteLine($"Part 1: {stones.Sum(stone => cache[(stone, 25)])}");
         
-        // PART 2
-        Console.WriteLine($"Part 2: {stones.Sum(st => BlinkCached(st, 75, cache))}");
+        return (stones.Sum(stone => cache[(stone, 25)]).ToString(), 
+                stones.Sum(st => BlinkCached(st, 75, cache)).ToString());
     }
 
     // returns resulting stone count

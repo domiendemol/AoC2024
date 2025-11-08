@@ -16,7 +16,7 @@ public class Day23
 		public override int GetHashCode() => name.GetHashCode();
 	}
 			
-	public void Run(List<string> input)
+	public (string, string) Run(List<string> input)
 	{
 		List<(string, string)> connections = input.Select(line => (line.Split('-')[0], line.Split('-')[1])).ToList();
 		Dictionary<string, Computer> computers = new Dictionary<string, Computer>();
@@ -36,7 +36,9 @@ public class Day23
 		
 		// Part 2
 		HashSet<Computer> largest = groups.MaxBy(l => l.Count());
-		Console.WriteLine($"Part 2: {string.Join(',', largest.OrderBy(c => c.name).Select(l => string.Join(',', l)))}");
+		string part2 = string.Join(',', largest.OrderBy(c => c.name).Select(l => string.Join(',', l)));
+		
+		return (part1.ToString(), part2);
 	}
 
 	private Computer GetOrAddComputer(string computerName, Dictionary<string, Computer> computers)

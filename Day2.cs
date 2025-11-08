@@ -4,15 +4,13 @@ namespace AoC2024;
 
 public class Day2
 {
-	public void Run(List<string> lines)
+	public (string, string) Run(List<string> lines)
 	{
 		List<List<int>> values = lines.Select(l => Regex.Matches(l, "[0-9]+").Select(m => Int32.Parse(m.Value)).ToList()).ToList();
 		
 		int part1 = values.Count(IsSafe);
-		Console.WriteLine($"PART 1: {part1}");
-		
 		int part2 = values.Count(CanBeSafe);
-		Console.WriteLine($"PART 2: {part2}");
+		return (part1.ToString(), part2.ToString());
 	}
 
 	bool CanBeSafe(List<int> line)

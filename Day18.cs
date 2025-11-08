@@ -6,7 +6,7 @@ public class Day18
 {
     private static Vector2Int[] _directions = [new(-1, 0), new(0, 1), new(1, 0), new(0,-1)];
 
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         List<Vector2Int> memories = input.Select(x => new Vector2Int(int.Parse(x.Split(',')[0]), int.Parse(x.Split(',')[1]))).ToList();
         
@@ -25,9 +25,9 @@ public class Day18
         // Part 1 
         Node end = graph[new Vector2Int(gridSize, gridSize)];
         int shortestPath = GetPathLength(graph, end, -1);
-        Console.WriteLine($"Part 1: {shortestPath}");
         
         // Part 2
+        Vector2Int part2 = new Vector2Int();
         int runs = 0;
         // List<Node> reducingGraph = new List<Vector2Int>(graph);
         for (int i = firstMemories.Count; i < memories.Count; i++)
@@ -43,12 +43,14 @@ public class Day18
                 shortestPath = GetPathLength(graph, end, runs++);
                 if (shortestPath == Int32.MaxValue)
                 {
-                    Console.WriteLine($"Part 2: {memories[i]}");
+                    part2 = memories[i];
                     // Console.WriteLine($"PF runs: {runs}");
-                    return;
+                    break;
                 }
             }
         }
+
+        return (shortestPath.ToString(), part2.ToString());
     }
 
     private int GetPathLength(Dictionary<Vector2Int, Node> graph, Node end, int run)

@@ -25,7 +25,7 @@ public class Day14
     private static int _width = 101; 
     private static int _height = 103; 
     
-    public void Run(List<string> input)
+    public (string, string) Run(List<string> input)
     {
         List<Robot> robots = GetRobots(input);
         if (robots[0].x != 99) {
@@ -34,7 +34,7 @@ public class Day14
         
         // PART 1
         Enumerable.Range(0, 100).ToList().ForEach(i => robots.ForEach(robot => robot.SimulateSecond()));
-        Console.WriteLine($"Part 1: {GetSafetyFactor(robots)}");
+        long part1 = GetSafetyFactor(robots);
 
         // PART 2
         robots = GetRobots(input);
@@ -54,7 +54,7 @@ public class Day14
             }
             prevSf = GetSafetyFactor(robots);
         }
-        Console.WriteLine($"Part 2: {s-1}");
+        return (part1.ToString(), (s-1).ToString());
     }
     
     private void PrintTree(List<Robot> robots)
